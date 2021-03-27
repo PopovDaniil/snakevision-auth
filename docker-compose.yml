@@ -1,0 +1,31 @@
+version: '3.4'
+
+services:
+  nodejs:
+    image: snakevisionauth
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment: 
+      AUTH_DB_HOST: postgres
+      AUTH_DB_USER: postgres
+      AUTH_DB_PASSWORD: postgres
+      AUTH_PORT: 8080
+    ports:
+      - 80:8080
+    volumes: 
+      - .:/usr/src/app
+    depends_on: 
+      - postgres
+
+  postgres:
+    image: postgres
+    ports: 
+      - 5432:5432
+    environment: 
+      POSTGRES_PASSWORD: postgres
+    volumes: 
+      - snakeauth-db:/var/lib/postgresql/data
+
+volumes: 
+  snakeauth-db:
