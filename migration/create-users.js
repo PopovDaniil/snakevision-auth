@@ -11,6 +11,10 @@ if (argv[2] == 'up') {
     await db`CREATE TABLE IF NOT EXISTS users (
         id serial PRIMARY KEY NOT NULL,
         name VARCHAR(100) NOT NULL,
+        login VARCHAR(32) UNIQUE NOT NULL,
+        age NUMERIC(3) NOT NULL,
+        email VARCHAR(64) UNIQUE NOT NULL,
+        telephone NUMERIC(11) UNIQUE NOT NULL,
         password VARCHAR(32) NOT NULL
     )`
     await db`CREATE TABLE IF NOT EXISTS logged_users (
