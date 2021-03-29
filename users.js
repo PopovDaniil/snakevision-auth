@@ -33,7 +33,13 @@ const Users = {
         console.log(userId);
         await sql`
             INSERT INTO logged_users VALUES (${token},${userId})`
-            .catch(e => { throw new Error(e) })
+            .catch(async e => {
+                if (e.code = '23505') {
+                    token = (await (sql`
+                        SELECT token FROM logged_users WHERE user_id = ${userId}`))
+                        [0].token
+                } else throw new Error(e)
+            })
         return token
     }
 }
