@@ -14,7 +14,14 @@ const Users = {
             INSERT INTO users (name, login, age, email, telephone, password)
             VALUES (${name},${login},${age},${email},${telephone},md5(${password}))
             RETURNING login, email, telephone`
-            .catch(e => { throw new Error(e) })
+            .then(() => res.status = "User successfully registered")
+            .catch(e => { 
+                if (e.code = '23505') {
+                token = (await (sql`
+                    SELECT token FROM logged_users WHERE user_id = ${userId}`))
+                    [0].token
+                res.error = "Login or email is already in use"
+            } else throw new Error(e) })
         return res;
     },
 
