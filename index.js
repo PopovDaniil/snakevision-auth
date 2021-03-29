@@ -22,7 +22,6 @@ fastify
                         name: { type: 'string' },
                         login: { type: 'string' },
                         age: { type: 'number' },
-                        login: { type: 'string' },
                         email: { type: 'string' },
                         telephone: { type: 'number' },
                         password: { type: 'string' }
@@ -37,15 +36,48 @@ fastify
                             email: { type: 'string' },
                             telephone: { type: 'number' },
                         },
-                        required: ['login','email','telephone']
+                        required: ['login', 'email', 'telephone']
                     }
                 }
             }
         },
         async (request, reply) => {
             const status = await users.add(request.body)
-            reply.code(200)
             reply.send(status[0])
         }
     )
+    .post('/login', {
+        schema: {
+            body: {
+                type: 'object',
+                properties: {
+                    login: { type: 'string' },
+                    password: { type: 'string' }
+                },
+                required: ['login', 'password']
+            },
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        token: { type: 'string' }
+                    },
+                    required: ['token']
+                },
+                401: {
+                    type: 'string'
+                }
+            }
+        }
+    },
+        async (request, reply) => {
+            const status = await users.login(request.body)
+            if (!status) {
+                reply.code(401)
+                reply.send("Authorization error")
+            } else {
+                reply.code(200)
+                reply.send(status)
+            }
+        })
     .listen(process.env.AUTH_PORT, '0.0.0.0')
