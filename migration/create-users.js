@@ -18,8 +18,8 @@ if (argv[2] == 'up') {
         password VARCHAR(32) NOT NULL
     )`
     await db`CREATE TABLE IF NOT EXISTS logged_users (
-        token CHAR(32) PRIMARY KEY NOT NULL,
-        user_id integer REFERENCES users NOT NULL
+        token CHAR(32) PRIMARY KEY UNIQUE NOT NULL,
+        user_id integer REFERENCES users UNIQUE NOT NULL
     )`
     console.log("Migrated");
 } else if (argv[2] == 'down') {
