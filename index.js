@@ -1,4 +1,6 @@
-const fastify = require('fastify').fastify()
+const fastify = require('fastify').fastify({
+    logger: true
+})
 const users = require('./users').users
 
 const headersSchema = {
@@ -32,18 +34,25 @@ fastify
                     200: {
                         type: 'object',
                         properties: {
-                            login: { type: 'string' },
-                            email: { type: 'string' },
-                            telephone: { type: 'number' },
-                        },
-                        required: ['login', 'email', 'telephone']
+                            data: {
+                                type: 'object',
+                                properties: {
+                                    login: { type: 'string' },
+                                    email: { type: 'string' },
+                                    telephone: { type: 'number' }
+                                },
+                                required: ['login', 'email', 'telephone']
+                            },
+                            error: { type: 'string' },
+                            info: { type: 'string' }
+                        }
                     }
                 }
             }
         },
         async (request, reply) => {
             const status = await users.add(request.body)
-            reply.send(status[0])
+            reply.send(status.toJSON())
         }
     )
     .post('/login', {
@@ -60,9 +69,17 @@ fastify
                 200: {
                     type: 'object',
                     properties: {
-                        token: { type: 'string' }
+                        data: {
+                            type: 'object',
+                            properties: {
+                                token: { type: 'string' }
+                            },
+                            required: ['token']
+                        },
+                        error: { type: 'string' },
+                        info: { type: 'string' }
                     },
-                    required: ['token']
+                    minProperties: 1
                 },
                 401: {
                     type: 'string'
@@ -72,12 +89,6 @@ fastify
     },
         async (request, reply) => {
             const status = await users.login(request.body)
-            if (!status) {
-                reply.code(401)
-                reply.send("Authorization error")
-            } else {
-                reply.code(200)
-                reply.send(status)
-            }
+            reply.send(status.toJSON())
         })
     .listen(process.env.AUTH_PORT, '0.0.0.0')
