@@ -91,4 +91,23 @@ fastify
             const status = await users.login(request.body)
             reply.send(status.toJSON())
         })
+    .post("/logout", {
+        schema: {
+            headers: headersSchema,
+            response: {
+                200: {
+                    type: 'object',
+                    properties: {
+                        error: { type: 'string' },
+                        info: { type: 'string' }
+                    },
+                    minProperties: 1
+                }
+            }
+        }
+    },
+    async (request, reply) => {
+        const status = await users.logout(request.headers)
+        reply.send(status.toJSON())
+    })
     .listen(process.env.AUTH_PORT, '0.0.0.0')

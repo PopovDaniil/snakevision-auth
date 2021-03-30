@@ -90,6 +90,22 @@ const Users = {
         console.log(res);
         return res
 
+    },
+    async logout(opts) {
+        const { token } = opts;
+        let res = new Status()
+
+        try {
+            const user = await sql`DELETE FROM logged_users WHERE token = ${token}`
+            if (!user.count) {
+                res.info = "User hasn't been logged in"
+            } else {
+                res.info = "User successfully logged out"
+            }
+        } catch(e) {
+            throw new Error(e)
+        }
+        return res
     }
 }
 
