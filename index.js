@@ -6,7 +6,7 @@ const users = require('./users').users
 const headersSchema = {
     type: 'object',
     properties: {
-        "Auth-Token": { type: 'string' }
+        "Auth-Token": { type: 'string', maxLength: 32, minLength: 32 }
     },
     required: ['Auth-Token']
 }
@@ -72,7 +72,7 @@ fastify
                         data: {
                             type: 'object',
                             properties: {
-                                token: { type: 'string' }
+                                token: { type: 'string', maxLength: 32, minLength: 32 }
                             },
                             required: ['token']
                         },
