@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   nodejs:
-    image: snakevisionauth
+    image: rostovdan/snakevision-auth
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -19,7 +19,7 @@ services:
       - postgres
 
   postgres:
-    image: postgres
+    image: rostovdan/snakevision-auth-db
     ports: 
       - 5432:5432
     environment: 
