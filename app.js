@@ -18,7 +18,12 @@ function authApp() {
         required: ['Auth-Token']
     }
 
+    const setCORS = async (request, reply) => {
+        reply.header("Access-Control-Allow-Origin",'*')
+    }
+
     server
+        .addHook('onSend', setCORS)
         .get("/", (request, reply) => {
             reply.send("Hello")
         })
