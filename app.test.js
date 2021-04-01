@@ -1,7 +1,7 @@
 const { test } = require('tap')
 const authApp = require('./app')
 
-test('GET /', async t => {
+test('App working', async t => {
     /**
      * @type {import('fastify').FastifyInstance}
      */
@@ -11,4 +11,6 @@ test('GET /', async t => {
         url: '/'
     })
     t.strictEqual(res.statusCode,200,'returns code 200')
+    t.strictEqual(res.body,"Hello","'Hello' string received")
+    t.strictEqual(res.headers["access-control-allow-origin"],"*", "CORS origin is set to *")
 })
