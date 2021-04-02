@@ -81,26 +81,17 @@ function authApp() {
                     200: {
                         type: 'object',
                         properties: {
-                            data: {
-                                type: 'object',
-                                properties: {
-                                    token: { type: 'string', maxLength: 32, minLength: 32 }
-                                },
-                                required: ['token']
-                            },
                             error: { type: 'string' },
                             info: { type: 'string' }
                         },
                         minProperties: 1
                     },
-                    401: {
-                        type: 'string'
-                    }
                 }
             }
         },
             async (request, reply) => {
                 const status = await users.login(request.body)
+                reply.headers(status.headers)
                 reply.send(status.toJSON())
             })
         .post("/logout", {

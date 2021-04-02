@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "fastify": "3.14.1",
-    "postgres": "1.0.2"
+    "postgres": "1.0.2",
+    "jsonwebtoken": "8.5.1"
   },
   "devDependencies": {
     "tap": "14.11.0"
