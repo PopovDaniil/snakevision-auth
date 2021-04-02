@@ -1,5 +1,7 @@
 const postgres = require('postgres')
-const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+
+const secret = "SnakEe@JS"
 
 const sql = postgres({
     host: process.env.AUTH_DB_HOST,
@@ -17,6 +19,8 @@ class Status {
     error;
     /** @type {string}*/
     info;
+    /** @type {Object<string,string>}*/
+    headers = {};
     Status() { }
     toJSON() {
         if (this.error) {
@@ -73,21 +77,10 @@ const Users = {
             return res;
         }
         const userId = user[0].id
-        let token = crypto.randomBytes(16).toString('hex');
-        try {
-            await sql`
-            INSERT INTO logged_users VALUES (${token},${userId})`
-            res.info = "User successfully logged in"
-        } catch (e) {
-            if (e.code = '23505') {
-                token = (await sql`
-                    SELECT token FROM logged_users WHERE user_id = ${userId}`)[0].token
-                res.info = "User has already been logged in"
-            } else
-                throw new Error(e)
-        }
-        res.data.token = token
-        console.log(res);
+        let token = jwt.sign({ userId }, secret, {expiresIn: "1h"})
+        
+        res.info = "User successfully logged in"
+        res.headers['auth-token'] = token
         return res
 
     },
@@ -95,16 +88,7 @@ const Users = {
         const { token } = opts;
         let res = new Status()
 
-        try {
-            const user = await sql`DELETE FROM logged_users WHERE token = ${token}`
-            if (!user.count) {
-                res.info = "User hasn't been logged in"
-            } else {
-                res.info = "User successfully logged out"
-            }
-        } catch(e) {
-            throw new Error(e)
-        }
+        res.info = "User successfully logged out"
         return res
     }
 }

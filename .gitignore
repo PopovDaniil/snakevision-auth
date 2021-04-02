@@ -1,3 +1,4 @@
 /node_modules
 /.devcontainer
 /.vscode
+/.nyc_output
