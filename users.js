@@ -77,7 +77,7 @@ const Users = {
             return res;
         }
         const userId = user[0].id
-        let token = jwt.sign({ userId }, secret, {expiresIn: "1h"})
+        let token = jwt.sign({ userId }, secret, {expiresIn: "90d"})
         
         res.info = "User successfully logged in"
         res.headers['auth-token'] = token
