@@ -13,13 +13,13 @@ function authApp() {
     const headersSchema = {
         type: 'object',
         properties: {
-            "Auth-Token": { type: 'string', maxLength: 32, minLength: 32 }
+            "Auth-Token": { type: 'string', minLength: 32 }
         },
         required: ['Auth-Token']
     }
 
     const setCORS = async (request, reply) => {
-        reply.header("Access-Control-Allow-Origin",'*')
+        reply.header("Access-Control-Allow-Origin", '*')
     }
 
     server
@@ -51,9 +51,10 @@ function authApp() {
                                     properties: {
                                         login: { type: 'string' },
                                         email: { type: 'string' },
-                                        telephone: { type: 'number' }
+                                        telephone: { type: 'number' },
+                                        token: { type: 'string' }
                                     },
-                                    required: ['login', 'email', 'telephone']
+                                    required: ['login', 'email', 'telephone', 'token']
                                 },
                                 error: { type: 'string' },
                                 info: { type: 'string' }
@@ -63,12 +64,13 @@ function authApp() {
                 }
             },
             async (request, reply) => {
-                const status = await users.add(request.body)
+                const status = await users.reg(request.body)
                 reply.send(status.toJSON())
             }
         )
         .post('/login', {
             schema: {
+                headers: headersSchema,
                 body: {
                     type: 'object',
                     properties: {
@@ -90,7 +92,10 @@ function authApp() {
             }
         },
             async (request, reply) => {
-                const status = await users.login(request.body)
+                const status = await users.login({
+                    ...request.body,
+                    ...request.headers
+                })
                 reply.headers(status.headers)
                 reply.send(status.toJSON())
             })
