@@ -88,7 +88,7 @@ const Users = {
             return res;
         }
         const userId = user[0].id
-        token = jwt.sign({ userId }, secret, { expiresIn: "1h" })
+        token = jwt.sign({ userId }, secret, { expiresIn: "90d" })
 
         await sql`UPDATE users SET token = ${token} WHERE id = ${userId}`
 
