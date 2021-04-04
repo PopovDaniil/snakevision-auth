@@ -18,12 +18,11 @@ function authApp() {
         required: ['Auth-Token']
     }
 
-    const setCORS = async (request, reply) => {
-        reply.header("Access-Control-Allow-Origin", '*')
-    }
+
 
     server
-        .addHook('onSend', setCORS)
+        .register(require('fastify-cors'), { 
+          })
         .get("/", (request, reply) => {
             reply.send("Hello")
         })
