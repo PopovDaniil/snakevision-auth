@@ -1,4 +1,6 @@
 const fastify = require('fastify')
+const postgres = require('postgres')
+
 /**
  * 
  * @returns {import('fastify').Fastify}
@@ -8,7 +10,13 @@ function authApp() {
      * @type {import('fastify').FastifyInstance}
      */
     const server = fastify()
-    const users = require('./users').users
+    const Users = require('./users')
+
+    const sql = postgres({
+        host: process.env.AUTH_DB_HOST,
+        username: process.env.AUTH_DB_USER,
+        password: process.env.AUTH_DB_PASSWORD
+    });
 
     const headersSchema = {
         type: 'object',
@@ -23,7 +31,10 @@ function authApp() {
     }
 
     server
+        .decorate('db', sql)
+        .decorate('users', new Users(server.db), ['db'])
         .addHook('onSend', setCORS)
+        .addHook('onClose', async () => await server.db.end())
         .get("/", (request, reply) => {
             reply.send("Hello")
         })
@@ -64,7 +75,7 @@ function authApp() {
                 }
             },
             async (request, reply) => {
-                const status = await users.reg(request.body)
+                const status = await server.users.reg(request.body)
                 reply.send(status.toJSON())
             }
         )
@@ -97,7 +108,7 @@ function authApp() {
             }
         },
             async (request, reply) => {
-                const status = await users.login({
+                const status = await server.users.login({
                     ...request.body
                 })
                 reply.headers(status.headers)
@@ -120,7 +131,7 @@ function authApp() {
             }
         },
             async (request, reply) => {
-                const status = await users.logout(request.headers)
+                const status = await server.users.logout(request.headers)
                 reply.send(status.toJSON())
             })
     return server
