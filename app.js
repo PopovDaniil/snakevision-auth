@@ -70,7 +70,6 @@ function authApp() {
         )
         .post('/login', {
             schema: {
-                headers: headersSchema,
                 body: {
                     type: 'object',
                     properties: {
@@ -84,7 +83,13 @@ function authApp() {
                         type: 'object',
                         properties: {
                             error: { type: 'string' },
-                            info: { type: 'string' }
+                            info: { type: 'string' },
+                            data: {
+                                type: 'object',
+                                properties: {
+                                    token: { type: 'string' }
+                                }
+                            }
                         },
                         minProperties: 1
                     },
@@ -93,11 +98,11 @@ function authApp() {
         },
             async (request, reply) => {
                 const status = await users.login({
-                    ...request.body,
-                    ...request.headers
+                    ...request.body
                 })
                 reply.headers(status.headers)
                 reply.send(status.toJSON())
+                console.log(status.toJSON())
             })
         .post("/logout", {
             schema: {

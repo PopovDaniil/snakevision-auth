@@ -72,29 +72,25 @@ const Users = {
 
     async login(opts) {
         const { login, password } = opts
-        let token = opts['auth-token']
-
         let res = new Status()
-        const tokenData = jwt.verify(token, secret)
-        console.log(tokenData);
 
         const user = await sql`
             SELECT id FROM users 
             WHERE login = ${login} 
             AND password = md5(${password})`
             .catch(e => { throw new Error(e) })
-        if (!user.count || login != tokenData.login || password != tokenData.password) {
+        if (!user.count) {
             res.error = "Login or password is not correct"
             return res;
         }
         const userId = user[0].id
        
-        token = jwt.sign({ userId }, secret, { expiresIn: "90d" })
+        const token = jwt.sign({ userId }, secret, { expiresIn: "90d" })
 
         await sql`UPDATE users SET token = ${token} WHERE id = ${userId}`
 
         res.info = "User successfully logged in"
-        res.headers['auth-token'] = token
+        res.data.token = token
         return res
 
     },
