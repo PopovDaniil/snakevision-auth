@@ -5,16 +5,16 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "fastify-cors": "^5.2.0",
-    "test": "tap"
+    "test": "tap -w"
   },
   "dependencies": {
     "fastify": "3.14.1",
-    "postgres": "1.0.2",
-    "jsonwebtoken": "8.5.1"
+    "fastify-cors": "^5.2.0",
+    "jsonwebtoken": "8.5.1",
+    "postgres": "1.0.2"
   },
   "devDependencies": {
-    "tap": "14.11.0"
+    "tap": "^14.11.0"
   },
   "author": "",
   "license": "ISC"
