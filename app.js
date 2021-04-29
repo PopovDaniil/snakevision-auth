@@ -26,15 +26,14 @@ function authApp() {
         required: ['Auth-Token']
     }
 
-    const setCORS = async (request, reply) => {
-        reply.header("Access-Control-Allow-Origin", '*')
-    }
+
 
     server
+        .register(require('fastify-cors'), {})
         .decorate('db', sql)
         .decorate('users', new Users(server.db), ['db'])
-        .addHook('onSend', setCORS)
         .addHook('onClose', async () => await server.db.end())
+
         .get("/", (request, reply) => {
             reply.send("Hello")
         })
