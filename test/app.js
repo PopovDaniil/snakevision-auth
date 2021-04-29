@@ -1,7 +1,8 @@
-const { test } = require('tap')
-const authApp = require('./app')
+const Postgres = require('postgres');
+const t = require('tap')
+const authApp = require('../app')
 
-test('App working', async t => {
+t.test('App working', async t => {
     /**
      * @type {import('fastify').FastifyInstance}
      */
