@@ -1,4 +1,6 @@
 const fastify = require('fastify')
+const postgres = require('postgres')
+
 /**
  * 
  * @returns {import('fastify').Fastify}
@@ -8,7 +10,13 @@ function authApp() {
      * @type {import('fastify').FastifyInstance}
      */
     const server = fastify()
-    const users = require('./users').users
+    const Users = require('./users')
+
+    const sql = postgres({
+        host: process.env.AUTH_DB_HOST,
+        username: process.env.AUTH_DB_USER,
+        password: process.env.AUTH_DB_PASSWORD
+    });
 
     const headersSchema = {
         type: 'object',
@@ -21,8 +29,11 @@ function authApp() {
 
 
     server
-        .register(require('fastify-cors'), { 
-          })
+        .register(require('fastify-cors'), {})
+        .decorate('db', sql)
+        .decorate('users', new Users(server.db), ['db'])
+        .addHook('onClose', async () => await server.db.end())
+
         .get("/", (request, reply) => {
             reply.send("Hello")
         })
@@ -63,13 +74,12 @@ function authApp() {
                 }
             },
             async (request, reply) => {
-                const status = await users.reg(request.body)
+                const status = await server.users.reg(request.body)
                 reply.send(status.toJSON())
             }
         )
         .post('/login', {
             schema: {
-                headers: headersSchema,
                 body: {
                     type: 'object',
                     properties: {
@@ -83,7 +93,13 @@ function authApp() {
                         type: 'object',
                         properties: {
                             error: { type: 'string' },
-                            info: { type: 'string' }
+                            info: { type: 'string' },
+                            data: {
+                                type: 'object',
+                                properties: {
+                                    token: { type: 'string' }
+                                }
+                            }
                         },
                         minProperties: 1
                     },
@@ -91,12 +107,12 @@ function authApp() {
             }
         },
             async (request, reply) => {
-                const status = await users.login({
-                    ...request.body,
-                    ...request.headers
+                const status = await server.users.login({
+                    ...request.body
                 })
                 reply.headers(status.headers)
                 reply.send(status.toJSON())
+                console.log(status.toJSON())
             })
         .post("/logout", {
             schema: {
@@ -114,7 +130,7 @@ function authApp() {
             }
         },
             async (request, reply) => {
-                const status = await users.logout(request.headers)
+                const status = await server.users.logout(request.headers)
                 reply.send(status.toJSON())
             })
     return server

@@ -1,13 +1,4 @@
-const postgres = require('postgres')
 const jwt = require('jsonwebtoken')
-
-const secret = "SnakEe@JS"
-
-const sql = postgres({
-    host: process.env.AUTH_DB_HOST,
-    username: process.env.AUTH_DB_USER,
-    password: process.env.AUTH_DB_PASSWORD
-});
 
 /**
  * Объект, содержащий данные из БД и информацию о состоянии
@@ -37,7 +28,16 @@ class Status {
 }
 
 
-const Users = {
+class Users {
+    /**
+     * 
+     * @param {Function} db 
+     */
+    constructor(db) {
+        this.db = db;
+    }
+    secret = "SnakEe@JS"
+
     /**
      * Добавляет нового пользователя
      * @param {Object} opts
@@ -48,10 +48,10 @@ const Users = {
         const { name, login, age, email, telephone, password } = opts
         let res = new Status()
 
-        let token = jwt.sign({ login, password }, secret, { expiresIn: "90d" })
+        let token = jwt.sign({ login, password }, this.secret, { expiresIn: "90d" })
 
         try {
-            const user = await sql`
+            const user = await this.db`
             INSERT INTO users (name, login, age, email, telephone, password, token)
             VALUES (${name},${login},${age},${email},${telephone},md5(${password}),${token})
             RETURNING login, email, telephone, token`
@@ -66,38 +66,36 @@ const Users = {
             else throw new Error(e)
         }
 
-
+        // await sql.end()
         return res
-    },
+    }
 
     async login(opts) {
         const { login, password } = opts
-        let token = opts['auth-token']
-
         let res = new Status()
-        const tokenData = jwt.verify(token, secret)
-        console.log(tokenData);
 
-        const user = await sql`
+        const user = await this.db`
             SELECT id FROM users 
             WHERE login = ${login} 
             AND password = md5(${password})`
             .catch(e => { throw new Error(e) })
-        if (!user.count || login != tokenData.login || password != tokenData.password) {
+        if (!user.count) {
             res.error = "Login or password is not correct"
             return res;
         }
         const userId = user[0].id
        
-        token = jwt.sign({ userId }, secret, { expiresIn: "90d" })
+        const token = jwt.sign({ userId }, this.secret, { expiresIn: "90d" })
 
-        await sql`UPDATE users SET token = ${token} WHERE id = ${userId}`
+        await this.db`UPDATE users SET token = ${token} WHERE id = ${userId}`
 
         res.info = "User successfully logged in"
-        res.headers['auth-token'] = token
+        res.data.token = token
+
+        // await sql.end()
         return res
 
-    },
+    }
     async logout(opts) {
         const token = opts['auth-token']
         let res = new Status()
@@ -108,11 +106,13 @@ const Users = {
             res.error = "Token does not contain userId"
             return res
         }
-        await sql`UPDATE users SET token = NULL WHERE id = ${tokenData.userId}`
+        await this.db`UPDATE users SET token = NULL WHERE id = ${tokenData.userId}`
 
         res.info = "User successfully logged out"
+
+        // await sql.end()
         return res
     }
 }
 
-exports.users = Users
+module.exports = Users

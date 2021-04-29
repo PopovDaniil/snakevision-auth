@@ -18,6 +18,9 @@ if (argv[2] == 'up') {
         password VARCHAR(32) NOT NULL,
         token VARCHAR(255) UNIQUE NULL
     )`
+    await db`INSERT INTO users VALUES(
+        1, 'Admin', 'root', 20, 'admin@snakevision.ru', 89001234567, '63a9f0ea7bb98050796b649e85481845'
+    )`
     console.log("Migrated");
 } else if (argv[2] == 'down') {
     await db`DROP TABLE IF EXISTS users`
