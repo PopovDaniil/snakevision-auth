@@ -17,7 +17,7 @@ const user = {
     token: ''
 };
 
-t.test('User registration', async t => {
+t.test('User registration with unique email', async t => {
     /**
      * @type {import('fastify').FastifyInstance}
      */
@@ -38,7 +38,27 @@ t.test('User registration', async t => {
     })
 })
 
-t.test('User login', async t => {
+t.test('User registration with already used login', async t => {
+    /**
+     * @type {import('fastify').FastifyInstance}
+     */
+    const app = authApp()
+    const res = await app.inject({
+        method: 'POST',
+        url: '/reg',
+        payload: user
+    }).catch(e => console.error(e))
+    const body = await res.json()
+
+    t.equal(res.statusCode, 200, 'returns code 200')
+    t.match(body, { error: 'Login, email or telephone is already in use' })
+
+    t.tearDown(() => {
+        app.close()
+    })
+})
+
+t.test('User login with correct credentials', async t => {
     /**
     * @type {import('fastify').FastifyInstance}
     */
@@ -56,13 +76,33 @@ t.test('User login', async t => {
     t.equal(res.statusCode, 200, 'returns code 200')
 
     t.tearDown(async () => {
-        await sql`DELETE FROM users WHERE login=${user.login}`
-        await sql.end()
         app.close()
     })
 })
 
-t.test("User logout", async t => {
+t.test('User login with incorrect credentials', async t => {
+    /**
+    * @type {import('fastify').FastifyInstance}
+    */
+    const app = authApp()
+    const res = await app.inject({
+        method: 'POST',
+        url: '/login',
+        payload: {
+            login: user.login,
+            password: "123"
+        }
+    })
+    const body = await res.json()
+    t.equal(res.statusCode, 200, 'returns code 200')
+    t.equal(body.error, "Login or password is not correct")
+
+    t.tearDown(async () => {
+        app.close()
+    })
+})
+
+t.test("User logout with valid token", async t => {
     /**
     * @type {import('fastify').FastifyInstance}
     */
@@ -78,6 +118,28 @@ t.test("User logout", async t => {
     t.equal(res.statusCode, 200, 'returns code 200')
     t.match(body, {info: "User successfully logged out"})
     t.tearDown(async () => {
+        app.close()
+    })
+}
+)
+t.test("User logout with invalid token", async t => {
+    /**
+    * @type {import('fastify').FastifyInstance}
+    */
+    const app = authApp()
+    const res = await app.inject({
+        method: 'POST',
+        url: '/logout',
+        headers: {
+            'Auth-Token': '123'
+        }
+    })
+    const body = await res.json()
+    t.equal(res.statusCode, 400, 'returns code 400')
+    t.match(body, {error: "Bad Request"})
+    t.tearDown(async () => {
+        await sql`DELETE FROM users WHERE login=${user.login}`
+        await sql.end()
         app.close()
     })
 }
