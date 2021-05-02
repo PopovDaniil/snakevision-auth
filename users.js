@@ -100,7 +100,7 @@ class Users {
         const token = opts['auth-token']
         let res = new Status()
 
-        const tokenData = jwt.verify(token, secret)
+        const tokenData = jwt.verify(token, this.secret)
         console.log(tokenData)
         if (!tokenData.userId) {
             res.error = "Token does not contain userId"
