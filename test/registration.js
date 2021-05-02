@@ -13,7 +13,8 @@ const user = {
     password: "vision",
     age: 30,
     email: "ivan@gmail.com",
-    telephone: 88005553535
+    telephone: 88005553535,
+    token: ''
 };
 
 t.test('User registration', async t => {
@@ -28,7 +29,7 @@ t.test('User registration', async t => {
     }).catch(e => console.error(e))
     const body = await res.json()
 
-    t.strictEqual(res.statusCode, 200, 'returns code 200')
+    t.equal(res.statusCode, 200, 'returns code 200')
     t.notMatch(body, { error: '' })
     t.match(body, { info: "User successfully registered", data: {} })
 
@@ -51,10 +52,8 @@ t.test('User login', async t => {
         }
     })
     const body = await res.json()
-    console.log(body);
-    t.strictEqual(res.statusCode, 200, 'returns code 200')
-    t.strictEqual()
-
+    user.token = body.data.token
+    t.equal(res.statusCode, 200, 'returns code 200')
 
     t.tearDown(async () => {
         await sql`DELETE FROM users WHERE login=${user.login}`
@@ -62,3 +61,24 @@ t.test('User login', async t => {
         app.close()
     })
 })
+
+t.test("User logout", async t => {
+    /**
+    * @type {import('fastify').FastifyInstance}
+    */
+    const app = authApp()
+    const res = await app.inject({
+        method: 'POST',
+        url: '/logout',
+        headers: {
+            'Auth-Token': user.token
+        }
+    })
+    const body = await res.json()
+    t.equal(res.statusCode, 200, 'returns code 200')
+    t.match(body, {info: "User successfully logged out"})
+    t.tearDown(async () => {
+        app.close()
+    })
+}
+)
